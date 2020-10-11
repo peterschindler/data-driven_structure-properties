@@ -1,4 +1,5 @@
 numpy
 matplotlib
 pymatgen
+sklearn
 crystal_toolkit
