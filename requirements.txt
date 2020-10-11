@@ -2,4 +2,5 @@ numpy
 matplotlib
 pymatgen
 sklearn
+skimage
 crystal_toolkit
