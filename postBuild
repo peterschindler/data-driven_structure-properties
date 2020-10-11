@@ -1,1 +1,1 @@
-jupyter labextension install @crystal_toolkit/crystaltoolkit-extension --minimize=False
+jupyter labextension install crystaltoolkit-extension --minimize=False
