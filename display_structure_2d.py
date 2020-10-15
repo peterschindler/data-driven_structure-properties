@@ -190,21 +190,3 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
     ax.set_xticks([])
     ax.set_yticks([])
     return ax
-
-coords = [[0, 0, 0], [0.75,0.5,0.75]]
-lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84,
-                                    alpha=120, beta=90, gamma=60)
-struct = Structure(lattice, ["Zn", "S"], coords)
-struct.to(filename='test.cif')
-
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-conv = SpacegroupAnalyzer(struct).get_conventional_standard_structure()
-
-#coords = [[0, 0, 0], [0.75,0.5,0.75], [1, 1, 0.5], [0, 0, 0.25]]
-#lattice = Lattice.from_parameters(a=3.84, b=3.84, c=3.84, alpha=120, beta=90, gamma=60)
-#test = Structure(lattice, ["Zn", "S", "O", "N"], coords)
-#repeat_uc_edge_atoms(test)
-
-fig, ax = plt.subplots(tight_layout=True)
-display_structure(struct, ax, miller_index=[1,0,0], scale=0.8, repeat=[2,2,2], draw_unit_cell=True, decay=0.0, transform_to_conventional=True, rotate=90)
-plt.savefig('test.png', dpi = 300)
