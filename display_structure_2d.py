@@ -86,7 +86,8 @@ def repeat_uc_edge_atoms(structure, tol=1e-7):
 
 
 def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1,1], transform_to_conventional = True,
-                      repeat_unitcell_edge_atoms=True, draw_unit_cell=True, draw_legend=True, legend_loc='best', padding=5.0, scale=0.8, decay=0.0):
+                      repeat_unitcell_edge_atoms=True, draw_unit_cell=True, draw_frame=False,
+                      draw_legend=True, legend_loc='best', legend_fontsize=14, padding=5.0, scale=0.8, decay=0.0):
     """
     Function that helps visualize the struct in a 2-D plot, for
     convenient viewing of output of AdsorbateSiteFinder.
@@ -101,8 +102,10 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
         repeat_unitcell_edge_atoms (bool): Whether to repeat atoms that lie on the edges/corners of unit cell_length
                                           (makes the display look cut off more smoothly)
         draw_unit_cell (bool): flag indicating whether or not to draw cell
+        draw_frame (bool): Whether to draw a frame around the plot (axis on/off)
         draw_legend (bool): Whether to draw a legend labeling the atom types
         legend_loc (string): Location of legend
+        legend_fontsize (int): Fontsize of legend
         padding (float): Padding of the plot around the outermost atoms
         scale (float): radius scaling for sites
         decay (float): how the alpha-value decays along the z-axis
@@ -179,14 +182,15 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
         unique_sites = list({s.species_string for s in sites})
         unique_colors = [color_dict[site] for site in unique_sites]
         handles = [Patch(facecolor=unique_colors[i], label=str(unique_sites[i]), linewidth=1, edgecolor='black') for i in range(len(unique_sites))]
-        ax.legend(handles=handles, frameon=False, loc=legend_loc)
+        ax.legend(handles=handles, frameon=False, loc=legend_loc, fontsize=legend_fontsize)
 
     ax.set_aspect("equal")
     x_lim = [min(coords[:,0])-padding, max(coords[:,0])+padding]
     y_lim = [min(coords[:,1])-padding, max(coords[:,1])+padding]
     ax.set_xlim(x_lim)
     ax.set_ylim(y_lim)
-    #ax.axis('off')
+    if not draw_frame:
+        ax.axis('off')
     ax.set_xticks([])
     ax.set_yticks([])
     return ax
