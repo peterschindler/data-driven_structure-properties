@@ -80,14 +80,15 @@ def repeat_uc_edge_atoms(structure, tol=1e-7):
                         border_coords.append(new_coord)
                         border_species.append(s.specie)
 
-    #Pymatgen will replace some 0 fractional coords with 1, hence I am adding a small tolerance value to all 0 fractional coords
-    final_coords = [[tol if f < tol else f for f in fc] for fc in struct.frac_coords.tolist()+border_coords]
+    #Fractional coords 0 and 1 may often get replaced with one another (during conversion to cart_coords),
+    #hence adding/subtracting a tol value in these cases
+    final_coords = [[tol if f < tol else 1-tol if f > 1-tol else f for f in fc] for fc in struct.frac_coords.tolist()+border_coords]
     return Structure(struct.lattice, struct.species+border_species, final_coords)
 
 
 def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1,1], transform_to_conventional = False,
                       repeat_unitcell_edge_atoms=True, draw_unit_cell=True, draw_frame=False,
-                      draw_legend=True, legend_loc='best', legend_fontsize=16, padding=5.0, scale=0.8, decay=0.0):
+                      draw_legend=True, legend_loc='best', legend_fontsize=14, padding=5.0, scale=0.8, decay=0.0):
     """
     Function that helps visualize the struct in a 2-D plot, for
     convenient viewing of output of AdsorbateSiteFinder.
