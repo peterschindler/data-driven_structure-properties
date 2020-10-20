@@ -195,3 +195,116 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
     ax.set_xticks([])
     ax.set_yticks([])
     return ax
+
+def plot_periodic_table_heatmap(elemental_data, cbar_label="", cbar_label_size=14,
+                           show_plot=False, cmap="YlOrRd", alpha=0.65, cmap_range=None, blank_color="grey",
+                           value_format=None, max_row=9):
+    """
+    A static method that generates a heat map overlayed on a periodic table.
+    Args:
+         elemental_data (dict): A dictionary with the element as a key and a
+            value assigned to it, e.g. surface energy and frequency, etc.
+            Elements missing in the elemental_data will be grey by default
+            in the final table elemental_data={"Fe": 4.2, "O": 5.0}.
+         cbar_label (string): Label of the colorbar. Default is "".
+         cbar_label_size (float): Font size for the colorbar label. Default is 14.
+         cmap_range (tuple): Minimum and maximum value of the colormap scale.
+            If None, the colormap will autotmatically scale to the range of the
+            data.
+         show_plot (bool): Whether to show the heatmap. Default is False.
+         value_format (str): Formatting string to show values. If None, no value
+            is shown. Example: "%.4f" shows float to four decimals.
+         cmap (string): Color scheme of the heatmap. Default is 'YlOrRd'.
+            Refer to the matplotlib documentation for other options.
+         blank_color (string): Color assigned for the missing elements in
+            elemental_data. Default is "grey".
+         max_row (integer): Maximum number of rows of the periodic table to be
+            shown. Default is 9, which means the periodic table heat map covers
+            the first 9 rows of elements.
+    """
+
+    # Convert primitive_elemental data in the form of numpy array for plotting.
+    if cmap_range is not None:
+        max_val = cmap_range[1]
+        min_val = cmap_range[0]
+    else:
+        max_val = max(elemental_data.values())
+        min_val = min(elemental_data.values())
+
+    max_row = min(max_row, 9)
+    if max_row > 7:
+        max_row += 1
+    if max_row <= 0:
+        raise ValueError("The input argument 'max_row' must be positive!")
+
+    value_table = np.empty((max_row, 18)) * np.nan
+    blank_value = min_val - 0.01
+
+    for el in Element:
+        if el.row > max_row:
+            continue
+        value = elemental_data.get(el.symbol, blank_value)
+        if el.row > 7:
+            value_table[el.row, el.group - 1] = value
+        else:
+            value_table[el.row - 1, el.group - 1] = value
+
+    # Initialize the plt object
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    plt.gcf().set_size_inches(12, 6)
+
+    #Enable alpha for colormap
+    from matplotlib.colors import ListedColormap
+    my_cmap_rgb = plt.get_cmap(cmap)(np.arange(256))
+    for i in range(3): # Do not include the last column!
+        my_cmap_rgb[:,i] = (1 - alpha) + alpha * my_cmap_rgb[:,i]
+    my_cmap = ListedColormap(my_cmap_rgb, name='my_cmap')
+
+    # We set nan type values to masked values (ie blank spaces)
+    data_mask = np.ma.masked_invalid(value_table.tolist())
+    heatmap = ax.pcolor(data_mask, cmap=my_cmap, edgecolors='w', linewidths=3,
+                        vmin=min_val - 0.001, vmax=max_val + 0.001)
+    cbar = fig.colorbar(heatmap, aspect=40)
+
+    cbar.outline.set_visible(False)
+    cbar.set_alpha(1)
+    # Grey out missing elements in input data
+    cbar.cmap.set_under(blank_color, alpha=alpha)
+
+    # Set the colorbar label and tick marks
+    cbar.set_label(cbar_label, rotation=270, labelpad=25, size=cbar_label_size)
+    cbar.ax.tick_params(labelsize=cbar_label_size)
+
+    # Refine and make the table look nice
+    ax.axis('off')
+    ax.invert_yaxis()
+
+    # Label each block with corresponding element and value
+    for i, row in enumerate(value_table):
+        for j, el in enumerate(row):
+            if not np.isnan(el):
+                if i > 7:
+                    symbol = Element.from_row_and_group(i, j + 1).symbol
+                    Z = Element.from_row_and_group(i, j + 1).Z
+                else:
+                    symbol = Element.from_row_and_group(i + 1, j + 1).symbol
+                    Z = Element.from_row_and_group(i + 1, j + 1).Z
+                #ax.axhline(y=i+0.7, linewidth=1, color='white')
+                plt.text(j + 0.1, i + 0.2, str(Z),
+                         horizontalalignment='left',
+                         verticalalignment='center', fontsize=9)
+                plt.text(j + 0.1, i + 0.5, symbol,
+                         horizontalalignment='left',
+                         verticalalignment='center', fontsize=14, weight="bold")
+                if el != blank_value and value_format is not None:
+                    plt.text(j + 0.5, i + 0.85, value_format % el,
+                             horizontalalignment='center',
+                             verticalalignment='center', fontsize=10, bbox=dict(boxstyle='square,pad=0.1', facecolor='white', alpha=1, linewidth=0))
+
+    plt.tight_layout()
+
+    if show_plot:
+        plt.show()
+
+    return plt
