@@ -30,8 +30,10 @@ def reorient(structure, miller_index, rotate=0):
     normal /= np.linalg.norm(normal)
     z = [0, 0, 1]
     rot_axis = np.cross(normal, z)
-    angle = np.arccos(np.clip(np.dot(normal, z), -1.0, 1.0))
-    struct = RotationTransformation(rot_axis, math.degrees(angle)).apply_transformation(struct)
+    #Check if normal and z are linearly dependent
+    if not np.isclose(rot_axis,[0,0,0]).all():
+        angle = np.arccos(np.clip(np.dot(normal, z), -1.0, 1.0))
+        struct = RotationTransformation(rot_axis, math.degrees(angle)).apply_transformation(struct)
     #Align other axis (longest) to x-axis
     lattm = struct.lattice.matrix
     basis_lengths_xy = [lattm[0][0]**2+lattm[0][1]**2, lattm[1][0]**2+lattm[1][1]**2, lattm[2][0]**2+lattm[2][1]**2]
