@@ -14,6 +14,7 @@ from monty.serialization import loadfn
 from pymatgen import Structure, Lattice, vis
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.transformations.standard_transformations import RotationTransformation
+from pymatgen.core.periodic_table import Element
 
 colors = loadfn(os.path.join(os.path.dirname(vis.__file__),
                              "ElementColorSchemes.yaml"))
