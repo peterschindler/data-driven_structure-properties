@@ -3,7 +3,6 @@ import os
 import math
 
 import numpy as np
-#from scipy.spatial import Delaunay
 
 from matplotlib import patches
 from matplotlib.patches import FancyArrowPatch, Patch, Circle, Path
@@ -89,23 +88,22 @@ def repeat_uc_edge_atoms(structure, tol=1e-7):
     return Structure(struct.lattice, struct.species+border_species, final_coords)
 
 
-def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1,1], transform_to_conventional = False,
+def display_structure(structure, ax, miller_index=[1,0,0], rotate=0, repeat=[1,1,1], transform_to_conventional = False,
                       repeat_unitcell_edge_atoms=True, draw_unit_cell=True, draw_frame=False,
                       draw_legend=True, legend_loc='best', legend_fontsize=14, padding=5.0, scale=0.8, decay=0.0):
     """
-    Function that helps visualize the struct in a 2-D plot, for
-    convenient viewing of output of AdsorbateSiteFinder.
+    Function that helps visualize the struct in a 2-D matplotlib plot
     Args:
         struct (struct): struct object to be visualized
         ax (axes): matplotlib axes with which to visualize
         miller_index (list): Viewing direction (normal to Miller plane)
         rotate (float): Rotate view around the viewing direction
-                          (Miller index normal stays the same, just rotation in plane normal to Miller index)
+                          (Miller index normal stays the same, just rotation within plane normal to Miller index)
         repeat (list): number of repeating unit cells in x,y,z to visualize
         transform_to_conventional (bool): Whether to transform input structure to conventional centering
         repeat_unitcell_edge_atoms (bool): Whether to repeat atoms that lie on the edges/corners of unit cell_length
-                                          (makes the display look cut off more smoothly)
-        draw_unit_cell (bool): flag indicating whether or not to draw cell
+                                          (makes the visualization look cut off more smoothly)
+        draw_unit_cell (bool): flag indicating whether or not to draw cell boundaries
         draw_frame (bool): Whether to draw a frame around the plot (axis on/off)
         draw_legend (bool): Whether to draw a legend labeling the atom types
         legend_loc (string): Location of legend
@@ -120,7 +118,6 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
     if repeat_unitcell_edge_atoms:
         struct = repeat_uc_edge_atoms(struct)
     struct = reorient(struct, miller_index, rotate=rotate)
-    #struct.to(filename='test_reoirented.cif')
     orig_cell = struct.lattice.matrix.copy()
     if repeat:
         struct.make_supercell(repeat)
@@ -146,21 +143,21 @@ def display_structure(structure, ax, miller_index=[1,1,0], rotate=0, repeat=[1,1
             codes = [Path.MOVETO, Path.LINETO]
             path = Path(verts, codes)
             patch = FancyArrowPatch(path=path, arrowstyle="-|>,head_length=7,head_width=4", facecolor='black', lw=2,
-                                      alpha=1, zorder=500)#, zorder=2 * n + 2)
+                                      alpha=1, zorder=500)
             ax.add_patch(patch)
         if (proj_b[0]**2+proj_b[1]**2)**0.5 > 0.5:
             verts = [[0., 0.], proj_b[:2]]
             codes = [Path.MOVETO, Path.LINETO]
             path = Path(verts, codes)
             patch = FancyArrowPatch(path=path, arrowstyle="-|>,head_length=7,head_width=4", facecolor='black', lw=2,
-                                      alpha=1, zorder=500)#, zorder=2 * n + 2)
+                                      alpha=1, zorder=500)
             ax.add_patch(patch)
         if (proj_c[0]**2+proj_c[1]**2)**0.5 > 0.5:
             verts = [[0., 0.], proj_c[:2]]
             codes = [Path.MOVETO, Path.LINETO]
             path = Path(verts, codes)
             patch = FancyArrowPatch(path=path, arrowstyle="-|>,head_length=7,head_width=4", facecolor='black', lw=2,
-                                      alpha=1, zorder=500)#, zorder=2 * n + 2)
+                                      alpha=1, zorder=500)
             ax.add_patch(patch)
 
         #Draw opposing three unit cell boundaries
