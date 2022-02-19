@@ -1,6 +1,7 @@
 numpy
 matplotlib
 pymatgen
+monty
 sklearn
 scikit-image
 crystal_toolkit
