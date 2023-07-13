@@ -1,6 +1,8 @@
 import itertools
 import os
 import math
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import patches
@@ -228,6 +230,7 @@ def plot_periodic_table_heatmap(elemental_data, cbar_label="", cbar_label_size=1
             shown. Default is 9, which means the periodic table heat map covers
             the first 9 rows of elements.
     """
+    # Code adopted from pymatgen and changed design/esthetics
 
     # Convert primitive_elemental data in the form of numpy array for plotting.
     if cmap_range is not None:
@@ -247,13 +250,19 @@ def plot_periodic_table_heatmap(elemental_data, cbar_label="", cbar_label_size=1
     blank_value = min_val - 0.01
 
     for el in Element:
-        if el.row > max_row:
-            continue
         value = elemental_data.get(el.symbol, blank_value)
-        if el.row > 7:
-            value_table[el.row, el.group - 1] = value
+        if 57 <= el.Z <= 71:
+            plot_row = 8
+            plot_group = (el.Z - 54) % 32
+        elif 89 <= el.Z <= 103:
+            plot_row = 9
+            plot_group = (el.Z - 54) % 32
         else:
-            value_table[el.row - 1, el.group - 1] = value
+            plot_row = el.row
+            plot_group = el.group
+        if plot_row > max_row:
+            continue
+        value_table[plot_row - 1, plot_group - 1] = value
 
     # Initialize the plt object
     import matplotlib.pyplot as plt
@@ -290,12 +299,8 @@ def plot_periodic_table_heatmap(elemental_data, cbar_label="", cbar_label_size=1
     for i, row in enumerate(value_table):
         for j, el in enumerate(row):
             if not np.isnan(el):
-                if i > 7:
-                    symbol = Element.from_row_and_group(i, j + 1).symbol
-                    z = Element.from_row_and_group(i, j + 1).Z
-                else:
-                    symbol = Element.from_row_and_group(i + 1, j + 1).symbol
-                    z = Element.from_row_and_group(i + 1, j + 1).Z
+                symbol = Element.from_row_and_group(i + 1, j + 1).symbol
+                z = Element.from_row_and_group(i + 1, j + 1).Z
                 # ax.axhline(y=i+0.7, linewidth=1, color='white')
                 plt.text(j + 0.1, i + 0.2, str(z),
                          horizontalalignment='left',
@@ -315,3 +320,33 @@ def plot_periodic_table_heatmap(elemental_data, cbar_label="", cbar_label_size=1
         plt.show()
 
     return plt
+
+
+if __name__ == '__main__':
+    import pandas as pd
+    mpids = pd.read_csv('data.csv', index_col=0)
+
+    crys_sys = ['cubic', 'hexagonal', 'trigonal', 'tetragonal']
+
+    elemental_data_all = {}
+    elemental_data_cs = {}
+
+    for ind in mpids.index:
+        elements = mpids.loc[ind, 'chemsys'].split('-')
+        for el in elements:
+            if el in elemental_data_all:
+                elemental_data_all[el] += 1
+            else:
+                elemental_data_all[el] = 1
+        if mpids.loc[ind, 'symmetry.crystal_system'] in crys_sys:
+            for el in elements:
+                if el in elemental_data_cs:
+                    elemental_data_cs[el] += 1
+                else:
+                    elemental_data_cs[el] = 1
+    elemental_data_ratio = {x: 100 * elemental_data_cs[x] / elemental_data_all[x]
+                            for x in elemental_data_all if x in elemental_data_cs}
+    # print(elemental_data_ratio.keys())
+    plt = plot_periodic_table_heatmap(elemental_data_ratio, cbar_label="Ratio (%)", cbar_label_size=16,
+                                      show_plot=False, cmap="YlOrRd", cmap_range=(20, 70), value_format='%d')
+    plt.savefig('test.png', dpi=300)
